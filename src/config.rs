@@ -11,12 +11,15 @@ pub struct Config {
     pub editor: String,
     pub git: bool,
     pub nix_config_path: PathBuf,
+    pub no_diff: bool,
 }
 
 impl Config {
+    // TODO: Builder pattern
     pub fn load(cli: &Cli) -> Self {
         let mut config = Config::load_from_toml();
 
+        // TODO: Automate
         if let Ok(editor_env) = std::env::var("KINTSUGI_EDITOR") {
             config.editor = editor_env;
         }
@@ -28,11 +31,19 @@ impl Config {
         if let Ok(nix_config_path_env) = std::env::var("KINTSUGI_NIX_CONFIG_PATH") {
             config.nix_config_path = PathBuf::from(nix_config_path_env);
         }
+        if let Ok(no_diff_env) = std::env::var("KINTSUGI_NO_DIFF") {
+            if let Ok(val) = no_diff_env.parse::<bool>() {
+                config.no_diff = val;
+            }
+        }
 
         match &cli.command {
             Commands::Construct(args) => {
                 if args.git {
                     config.git = true;
+                }
+                if args.no_diff.is_some() {
+                    config.no_diff = true;
                 }
             }
             Commands::Config(args) => {
@@ -84,6 +95,7 @@ impl Default for Config {
             editor,
             git: false,
             nix_config_path: PathBuf::from(NIXOS_DEFAULT_CONFIG),
+            no_diff: false,
         }
     }
 }

@@ -48,6 +48,9 @@ pub struct ConstructArgs {
             commit.\nThis flag has no effect unless --git is also used."
     )]
     pub message: Option<String>,
+
+    #[arg(long, help = "Don't show confirmation diff.")]
+    pub no_diff: Option<bool>,
 }
 
 #[derive(Args, Debug)]

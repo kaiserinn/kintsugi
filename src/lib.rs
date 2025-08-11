@@ -9,19 +9,31 @@ use std::process::Command;
 
 pub mod cli;
 pub mod config;
+pub mod utils;
 
 pub fn config(args: ConfigArgs, config: &Config) {
     let _ = args;
-    let config_dir = std::env::home_dir().unwrap().join(".config/nix");
 
     Command::new(&config.editor)
-        .current_dir(config_dir)
+        .current_dir(&config.nix_config_path)
         .status()
         .unwrap();
 }
 
 pub fn construct(args: ConstructArgs, config: &Config) {
     let op = args.operation.as_ref().unwrap_or(&Operations::Switch);
+
+    Command::new("jj")
+        .arg("diff")
+        .arg("--stat")
+        .arg("--no-pager")
+        .current_dir(&config.nix_config_path)
+        .status()
+        .unwrap();
+
+    if !utils::confirm("Continue?", true) {
+        return;
+    }
 
     info!("Executing `nixos-rebuild {op}`");
 
