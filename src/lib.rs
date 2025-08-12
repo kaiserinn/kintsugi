@@ -36,7 +36,6 @@ pub fn construct(args: ConstructArgs, config: &Config) {
     }
 
     info!("Executing `nixos-rebuild {op}`");
-
     Command::new("sudo")
         .arg("nixos-rebuild")
         .arg(op.to_string())
@@ -56,24 +55,40 @@ pub fn git(args: ConstructArgs, config: &Config) {
         format!("System rebuild at {timestamp}")
     });
 
-    info!("Adding changes to index");
-    Command::new("yadm")
-        .current_dir(&config.nix_config_path)
-        .arg("add")
-        .arg(".")
-        .status()
-        .unwrap();
-
-    info!("Committing changes as: '{commit_message}'");
-    Command::new("yadm")
-        .arg("commit")
+    info!("Executing `jj describe --message {commit_message}`");
+    Command::new("jj")
+        .arg("describe")
         .arg("--message")
-        .arg(&commit_message)
+        .arg(commit_message)
+        .current_dir(&config.nix_config_path)
         .status()
         .unwrap();
 
-    info!("Pushing changes");
-    Command::new("yadm").arg("push").status().unwrap();
+    info!("Executing `jj new`");
+    Command::new("jj")
+        .arg("new")
+        .current_dir(&config.nix_config_path)
+        .status()
+        .unwrap();
+
+    info!("Executing `jj bookmark set master -r @`");
+    Command::new("jj")
+        .arg("bookmark")
+        .arg("set")
+        .arg("master")
+        .arg("-r")
+        .arg("@")
+        .current_dir(&config.nix_config_path)
+        .status()
+        .unwrap();
+
+    info!("Executing `jj git push`");
+    Command::new("jj")
+        .arg("git")
+        .arg("push")
+        .current_dir(&config.nix_config_path)
+        .status()
+        .unwrap();
 }
 
 pub fn init_log() {
