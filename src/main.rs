@@ -6,7 +6,12 @@ fn main() {
     kintsugi::init_log();
 
     let cli = Cli::parse();
-    let config = Config::load(&cli);
+
+    #[rustfmt::skip]
+    let config = Config::load_from_toml()
+        .merge_args(&cli)
+        .merge_env();
+
     debug!("{config:#?}");
 
     match cli.command {

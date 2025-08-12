@@ -44,6 +44,7 @@ pub fn construct(args: ConstructArgs, config: &Config) {
         .status()
         .unwrap();
 
+    // TODO: Handle build fail
     if config.git && *op != Operations::Test {
         git(args, config);
     }
