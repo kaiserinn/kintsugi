@@ -36,7 +36,7 @@ pub fn construct(args: ConstructArgs, config: &Config) {
     }
 
     info!("Executing `nixos-rebuild {op}`");
-    Command::new("sudo")
+    let status = Command::new("sudo")
         .arg("nixos-rebuild")
         .arg(op.to_string())
         .arg("--flake")
@@ -44,12 +44,13 @@ pub fn construct(args: ConstructArgs, config: &Config) {
         .status()
         .unwrap();
 
-    // TODO: Handle build fail
-    if config.git && *op != Operations::Test {
+    if config.git && *op != Operations::Test && status.success() {
         git(args, config);
     }
 }
 
+// TODO: Handle cases where git is not properly initialized
+// TODO: Backup
 pub fn git(args: ConstructArgs, config: &Config) {
     let commit_message = args.message.unwrap_or_else(|| {
         let timestamp = Local::now().format("%Y-%m-%d %H:%M").to_string();
@@ -65,28 +66,24 @@ pub fn git(args: ConstructArgs, config: &Config) {
         .status()
         .unwrap();
 
-    info!("Executing `jj new`");
-    Command::new("jj")
-        .arg("new")
-        .current_dir(&config.nix_config_path)
-        .status()
-        .unwrap();
-
-    info!("Executing `jj bookmark set master -r @`");
+    info!("Executing `jj bookmark set trunk -r @`");
     Command::new("jj")
         .arg("bookmark")
         .arg("set")
-        .arg("master")
+        .arg("trunk")
         .arg("-r")
         .arg("@")
         .current_dir(&config.nix_config_path)
         .status()
         .unwrap();
 
-    info!("Executing `jj git push`");
+    info!("Executing `jj git push -b trunk --allow-new`");
     Command::new("jj")
         .arg("git")
         .arg("push")
+        .arg("-b")
+        .arg("trunk")
+        .arg("--allow-new")
         .current_dir(&config.nix_config_path)
         .status()
         .unwrap();

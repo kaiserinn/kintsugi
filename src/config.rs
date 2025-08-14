@@ -15,6 +15,7 @@ pub struct Config {
 }
 
 impl Config {
+    // TODO: Need to handle cases where the config is misformatted
     pub fn load_from_toml() -> Self {
         let kintsugi_config = std::env::home_dir()
             .unwrap()
