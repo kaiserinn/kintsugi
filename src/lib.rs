@@ -23,26 +23,48 @@ pub fn config(args: ConfigArgs, config: &Config) {
 pub fn construct(args: ConstructArgs, config: &Config) {
     let op = args.operation.as_ref().unwrap_or(&Operations::Switch);
 
-    Command::new("jj")
-        .arg("diff")
-        .arg("--stat")
-        .arg("--no-pager")
-        .current_dir(&config.nix_config_path)
-        .status()
-        .unwrap();
+    if !config.no_diff {
+        Command::new("jj")
+            .arg("diff")
+            .arg("--stat")
+            .arg("--no-pager")
+            .current_dir(&config.nix_config_path)
+            .status()
+            .unwrap();
 
-    if !utils::confirm("Continue?", true) {
-        return;
+        if !utils::confirm("Continue?", true) {
+            return;
+        }
     }
 
-    info!("Executing `nixos-rebuild {op}`");
-    let status = Command::new("sudo")
-        .arg("nixos-rebuild")
-        .arg(op.to_string())
-        .arg("--flake")
-        .arg(&config.nix_config_path)
-        .status()
-        .unwrap();
+    let status = match *op {
+        Operations::Home => {
+            info!(
+                "Executing `NH_FLAKE={} nh home switch`",
+                &config.nix_config_path.to_string_lossy()
+            );
+
+            Command::new("nh")
+                .arg("home")
+                .arg("switch")
+                .env("NH_FLAKE", &config.nix_config_path)
+                .status()
+                .unwrap()
+        }
+        _ => {
+            info!(
+                "Executing `NH_FLAKE={} nh os {op}`",
+                &config.nix_config_path.to_string_lossy()
+            );
+
+            Command::new("nh")
+                .arg("os")
+                .arg(op.to_string())
+                .env("NH_FLAKE", &config.nix_config_path)
+                .status()
+                .unwrap()
+        }
+    };
 
     if config.git && *op != Operations::Test && status.success() {
         git(args, config);

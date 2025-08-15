@@ -70,6 +70,9 @@ pub enum Operations {
 
     /// Corresponds to `nixos-rebuild boot`.
     Boot,
+
+    /// Corresponds to `home-manager switch`.
+    Home,
 }
 
 impl fmt::Display for Operations {
@@ -81,6 +84,7 @@ impl fmt::Display for Operations {
                 Operations::Switch => "switch",
                 Operations::Test => "test",
                 Operations::Boot => "boot",
+                Operations::Home => "home",
             }
         )
     }
