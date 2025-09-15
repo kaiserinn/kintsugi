@@ -50,6 +50,7 @@ impl Config {
                     self.editor = editor.to_string();
                 }
             }
+            _ => ()
         };
 
         self.clone()

@@ -11,6 +11,15 @@ pub mod cli;
 pub mod config;
 pub mod utils;
 
+pub fn dev() {
+    Command::new("nix")
+        .arg("develop")
+        .arg("-c")
+        .arg("fish")
+        .status()
+        .unwrap();
+}
+
 pub fn config(args: ConfigArgs, config: &Config) {
     let _ = args;
 

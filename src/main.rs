@@ -14,12 +14,16 @@ fn main() {
 
     debug!("{config:#?}");
 
+    // TODO: notif on completed actions
     match cli.command {
         Commands::Config(args) => {
             kintsugi::config(args, &config);
         }
         Commands::Construct(args) => {
             kintsugi::construct(args, &config);
+        }
+        Commands::Dev => {
+            kintsugi::dev();
         }
     };
 }

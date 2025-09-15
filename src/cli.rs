@@ -23,6 +23,8 @@ pub enum Commands {
 
     /// Open your editor in the Nix configuration directory.
     Config(ConfigArgs),
+
+    Dev,
 }
 
 #[derive(Args, Debug)]
